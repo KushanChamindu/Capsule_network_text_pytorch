@@ -7,6 +7,7 @@ from torch import nn
 from torch.nn.parameter import Parameter
 
 
+
 class Elu_layer(nn.Module):
     def __init__(self, num_features, in_channels, out_channels, filter_ensemble_size):
         super(Elu_layer, self).__init__()
@@ -84,8 +85,8 @@ class ConvCapsLayer(nn.Module):
 
 
     def forward(self, x):
-        h_i = Reshape(shape=(128, 8))(x)
+        h_i = self.h_i(x)
+        h_i = Reshape(shape=(128, 8))(h_i)
         normalized_h_i = self.batch_normalization_layer(h_i)
         relu_output = F.relu(normalized_h_i, alpha=1.0, inplace=False)
         return self.dropout_capsule(relu_output)
-
