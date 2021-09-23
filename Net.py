@@ -90,3 +90,8 @@ class ConvCapsLayer(nn.Module):
         normalized_h_i = self.batch_normalization_layer(h_i)
         relu_output = F.relu(normalized_h_i, alpha=1.0, inplace=False)
         return self.dropout_capsule(relu_output)
+
+class ExtractionNet(nn.Module):
+    def __init__(self, word_embed_dim, output_size):
+        super(ConvCapsLayer, self).__init__()
+        
