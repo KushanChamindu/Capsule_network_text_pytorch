@@ -42,13 +42,13 @@ class Routing(nn.Module):
         self.num_routing = num_routing
         self.l2_constant = l2_constant
         # self.kernel_initializer = initializers.get(kernel_initializer)
-        self.input_num_capsule = input_shape[1]
-        self.input_dim_capsule = input_shape[2]
+        self.input_num_capsule = input_shape[0]
+        self.input_dim_capsule = input_shape[1]
 
         weights = torch.Tensor(self.input_num_capsule, self.num_capsule,
                                       self.input_dim_capsule, self.dim_capsule)
         
-        self.W = Parameter(weights)  # nn.Parameter is a Tensor that's a module parameter.
+        self.W = Parameter(weights,requires_grad=True)  # nn.Parameter is a Tensor that's a module parameter.
 
         # Transform matrix
         # self.W = self.add_weight(shape=[self.input_num_capsule, self.num_capsule,
@@ -78,12 +78,11 @@ class Routing(nn.Module):
         print('input hat shape:', inputs_hat.shape)
         # dynamic routing
         if self.routing:
-            b = torch.zeros(shape=[torch.size(inputs_hat)[0],
-                         self.input_num_capsule, self.num_capsule])
+            b = torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule)
 
             for i in range(self.num_routing):
                 # c shape = [batch_size, num_capsule, input_num_capsule]
-                c = F.softmax(b)
+                c = F.softmax(b, dim=1)
 
                 # outputs = [batch_size, num_classes, upper capsule length]
                 outputs = torch.einsum('bij,bijm->bjm', c, inputs_hat)

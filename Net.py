@@ -1,4 +1,5 @@
 import math
+from routing import Routing
 
 import torch
 import torch.nn.functional as F
@@ -108,13 +109,16 @@ class ExtractionNet(nn.Module):
                                     filter_ensemble_size=filter_ensemble_size, dropout_ratio=dropout_ratio)
         self.caps_conv_layer = ConvCapsLayer(
             in_channels=capsule_num, out_channels=intermediate_size[0]*intermediate_size[1], intermediate_size=intermediate_size, dropout_ratio=dropout_ratio, filter_ensemble_size=(int(sentence_length - (filter_ensemble_size//2)*2), 1))
+        
+        self.routing_1 = Routing(num_capsule=16,dim_capsule=16,input_shape=intermediate_size, routing=True,num_routing=3)
 
     def forward(self, x):
         elu_layer = self.elu_layer(x)
         conv_layer = self.conv_layer(elu_layer, x)
-        self.caps_conv_layer.kernal_size = (conv_layer.size()[1], 1)
+        # self.caps_conv_layer.kernal_size = (conv_layer.size()[1], 1)
         caps_conv_layer = self.caps_conv_layer(conv_layer)
-        return(caps_conv_layer)
+        routing_1 = self.routing_1(caps_conv_layer)
+        return(routing_1)
 
 # x= torch.tensor([1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10], dtype=torch.long)
 # x = x.view(1,1,3,10)
