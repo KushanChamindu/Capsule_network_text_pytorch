@@ -65,7 +65,7 @@ class Routing(nn.Module):
         torch.nn.init.xavier_uniform_(self.W, gain=1.0)
 
     def forward(self, inputs):
-        # print("Routing started....")
+        print("Routing started....")
         # print(inputs.shape)
         # print(self.W.shape)
         # inputs_expand = K.expand_dims(inputs, 1)
