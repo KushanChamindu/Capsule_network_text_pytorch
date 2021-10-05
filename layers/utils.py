@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+import numpy as np
+import pickle
 
 class Multiply(nn.Module):
     def __init__(self):
@@ -19,3 +21,10 @@ class Reshape(nn.Module):
 
     def forward(self, x):
         return x.view(-1,self.shape[0],self.shape[1])
+
+
+def load_word_embedding_matrix(embedding_matrix_path):
+    f = open(embedding_matrix_path, 'rb')
+    embedding_matrix = np.array(pickle.load(f))
+    return embedding_matrix
+# print(torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")).size())
