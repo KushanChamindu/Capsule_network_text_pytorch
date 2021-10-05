@@ -13,6 +13,8 @@ class CapsuleNorm(nn.Module):
     inputs: shape=[None, num_vectors, dim_vector]
     output: shape=[None, num_vectors]
     """
+    def __init__(self):
+        super(CapsuleNorm, self).__init__()
 
     def forward(self, inputs, **kwargs):
         return torch.sqrt(torch.sum(torch.square(inputs), -1) + 1e-07)
