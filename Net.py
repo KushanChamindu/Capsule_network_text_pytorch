@@ -1,103 +1,15 @@
 import math
-from routing import Routing, CapsuleNorm
+from layers.elu_layer import Elu_layer
+from layers.conv_layer import ConvLayer
+from layers.caps_conv_layer import ConvCapsLayer
+from layers.routing import Routing, CapsuleNorm
+
 
 import torch
 import torch.nn.functional as F
-from capsule_layer import CapsuleLinear
 from torch import nn
 from torch.nn.parameter import Parameter
-# from torchsummary import summary
 
-
-class Elu_layer(nn.Module):
-    def __init__(self, num_features, in_channels, out_channels, filter_ensemble_size):
-        super(Elu_layer, self).__init__()
-        self.elu_layer_conv = nn.Conv2d(in_channels=in_channels,
-                                        out_channels=out_channels,
-                                        # num_features = self.embedding_size
-                                        kernel_size=(
-                                            filter_ensemble_size, num_features),
-                                        stride=1, bias=False,
-                                        )
-        self.batch_normalization_layer = nn.BatchNorm2d(
-            out_channels, eps=1e-05, momentum=0.1, affine=True)
-
-        self.elu_layer = nn.ELU(alpha=1.0, inplace=False)
-
-    def forward(self, x):
-        elu_layer_conv = self.elu_layer_conv(x)
-        batch_normalized = self.batch_normalization_layer(elu_layer_conv)
-        # F.elu(batch_normalized, alpha=1.0, inplace=False)
-        return self.elu_layer(batch_normalized)
-
-
-class Multiply(nn.Module):
-    def __init__(self):
-        super(Multiply, self).__init__()
-
-    def forward(self, tensors):
-        # result = torch.mul(tensors[0],tensors[1])
-        result = torch.ones(tensors[0].size())
-        for t in tensors:
-            result *= t
-        return result
-
-
-class ConvLayer(nn.Module):
-    def __init__(self, num_features, in_channels, out_channels, filter_ensemble_size, dropout_ratio):
-        super(ConvLayer, self).__init__()
-        self.conv_layer = nn.Conv2d(in_channels=in_channels,
-                                    out_channels=out_channels,
-                                    # num_features = self.embedding_size
-                                    kernel_size=(
-                                        filter_ensemble_size, num_features),
-                                    stride=1, bias=False,
-                                    )
-        self.batch_normalization_layer = nn.BatchNorm2d(
-            out_channels, eps=1e-05, momentum=0.1, affine=True)
-        self.multiply_layer = Multiply()
-        self.dropout = nn.Dropout(p=dropout_ratio, inplace=False)
-
-    def forward(self, elu_layer, x):
-        conv_layer = self.conv_layer(x)
-        batch_normalized = self.batch_normalization_layer(conv_layer)
-        # gate = torch.mul(elu_layer,batch_normalized)
-        gate_layer = self.multiply_layer([elu_layer, batch_normalized])
-        return self.dropout(gate_layer)
-        # return conv_layer
-
-
-class Reshape(nn.Module):
-    def __init__(self, shape):
-        super(Reshape, self).__init__()
-        self.shape = shape
-
-    def forward(self, x):
-        return x.view(-1,self.shape[0],self.shape[1])
-
-
-class ConvCapsLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, dropout_ratio, intermediate_size, filter_ensemble_size):
-        super(ConvCapsLayer, self).__init__()
-
-        self.h_i = nn.Conv2d(in_channels=in_channels,
-                             out_channels=out_channels,  # 128 * 8
-                             # num_features = self.embedding_size
-                             kernel_size=filter_ensemble_size,
-                             stride=1, bias=False,)
-        self.reshape_layer = Reshape(shape=intermediate_size)
-        self.batch_normalization_layer = nn.BatchNorm1d(
-            (intermediate_size[0]), eps=1e-05, momentum=0.1, affine=True)
-        self.relu_layer = nn.ReLU(inplace=False)
-        self.dropout_capsule = nn.Dropout(p=dropout_ratio, inplace=False)
-
-    def forward(self, x):
-        h_i = self.h_i(x)
-        h_i = self.reshape_layer(h_i)
-        normalized_h_i = self.batch_normalization_layer(h_i)
-        # relu_output = F.relu(normalized_h_i, alpha=1.0, inplace=False)
-        relu_output = self.relu_layer(normalized_h_i)
-        return self.dropout_capsule(relu_output)
 
 
 class ExtractionNet(nn.Module):
