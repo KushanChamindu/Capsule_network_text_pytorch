@@ -27,4 +27,20 @@ def load_word_embedding_matrix(embedding_matrix_path):
     f = open(embedding_matrix_path, 'rb')
     embedding_matrix = np.array(pickle.load(f))
     return embedding_matrix
+
+def text_preprocessing(data):
+    comments = data['comment']
+    labels = data['label']
+
+    comments_splitted = []
+    for comment in comments:
+        lines = []
+        try:
+            words = comment.split()
+            lines += words
+        except ValueError:
+            continue
+
+        comments_splitted.append(lines)
+    return comments_splitted, labels
 # print(torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")).size())
