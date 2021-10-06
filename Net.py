@@ -48,17 +48,17 @@ class ExtractionNet(nn.Module):
 config = Config(
     pretrain_vec=torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")))
 
-model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
-                      capsule_num=16, filter_ensemble_size=3, dropout_ratio=0.8, intermediate_size=(128, 8), sentence_length=30)
-# x = torch.rand(10, 1, 30, 300)
-# x = torch.rand(10,30,300)
-x = torch.Tensor([6868,  4081,   661, 39793,     4,   360,   221,    15, 39794,  8253,   319,  3148,
-   238,    74,  1430,   588, 39795,  1453,  9269,  4142,  2518, 39796,  4766,     0,
-     0,     0,     0,     0,     0,     0]).to(torch.long)
-x = torch.unsqueeze(x, 0)
-print(x.size())
-output = model(x)
-print(output.size())
-print(model)
-print(output)
+# model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
+#                       capsule_num=16, filter_ensemble_size=3, dropout_ratio=0.8, intermediate_size=(128, 8), sentence_length=30)
+# # x = torch.rand(10, 1, 30, 300)
+# # x = torch.rand(10,30,300)
+# x = torch.Tensor([6868,  4081,   661, 39793,     4,   360,   221,    15, 39794,  8253,   319,  3148,
+#    238,    74,  1430,   588, 39795,  1453,  9269,  4142,  2518, 39796,  4766,     0,
+#      0,     0,     0,     0,     0,     0]).to(torch.long)
+# x = torch.unsqueeze(x, 0)
+# print(x.size())
+# output = model(x)
+# print(output.size())
+# print(model)
+# print(output)
 

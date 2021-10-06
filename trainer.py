@@ -1,47 +1,32 @@
-from layers.utils import text_preprocessing, load_word_embedding_matrix
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras import utils
+from data_load import get_data_set
+from Net import ExtractionNet
+import torch
+from torch.utils.data import TensorDataset
+from torch.utils.data import DataLoader
+import torch.nn.functional as F
 
-folder_path =  '../capsule_network_files/'
 
-lankadeepa_data_path = folder_path + 'corpus/lankadeepa_tagged_comments.csv'
-gossip_lanka_data_path = folder_path + 'corpus/gossip_lanka_tagged_comments.csv'
+X_train,y_train, X_test,y_test = get_data_set()
 
-EMBEDDING_SIZE = 300
-embedding_type = "fasttext"
-context = 5
-embeds = "fasttext"
+X_train,y_train, X_test,y_test  = torch.from_numpy(X_train),torch.from_numpy(y_train),torch.from_numpy(X_test),torch.from_numpy(y_test)
 
-word_embedding_matrix_path = './embeddings/fasttext_lankadeepa_gossiplanka_300_5'
+train_ds = TensorDataset(X_train, y_train)
+batch_size = 8
+train_dl = DataLoader(train_ds, batch_size, shuffle=True)
+model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
+                      capsule_num=16, filter_ensemble_size=3, dropout_ratio=0.8, intermediate_size=(128, 8), sentence_length=30)
 
-lankadeepa_data = pd.read_csv(lankadeepa_data_path)[:9059]
-gossipLanka_data = pd.read_csv(gossip_lanka_data_path)
-gossipLanka_data = gossipLanka_data.drop(columns=['Unnamed: 3'])
+# loss_fn =torch.nn.CrossEntropyLoss
+loss_fn = F.mse_loss
+for xb,yb in train_dl:
+    # print(model(xb.to(torch.long)).size())
+    # print(xb.size(), yb.size())
+    output = model(xb.to(torch.long))
+    print("model output size - ",output.size())
+    print("label_size - ", yb.size())
+    loss = loss_fn((output), yb)
+    print(loss)
+    break
 
-all_data = pd.concat([lankadeepa_data, gossipLanka_data], ignore_index=True)
-all_data['label'] = all_data['label'] - 2
 
-comments_text, labels = text_preprocessing(all_data)
-t = Tokenizer()
-t.fit_on_texts(comments_text)
-vocab_size = len(t.word_index) + 1
-print(vocab_size)
-
-encoded_docs = t.texts_to_sequences(comments_text)
-max_length = 30
-padded_docs = pad_sequences(encoded_docs, maxlen=max_length, padding='post')
-comment_labels = np.array(labels)
-comment_labels = utils.to_categorical(comment_labels)
-padded_docs = np.array(padded_docs)
-
-print("Shape of all comments: ", padded_docs.shape)
-print("Shape of labels: ", comment_labels.shape)
-
-X_train, X_test, y_train, y_test = train_test_split(padded_docs, comment_labels, test_size=0.1, random_state=42,
-                                                    shuffle=True)
-print("Train lables shape: ", y_train.shape)
 
