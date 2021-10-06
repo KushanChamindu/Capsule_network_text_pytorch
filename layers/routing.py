@@ -67,7 +67,7 @@ class Routing(nn.Module):
         torch.nn.init.xavier_uniform_(self.W, gain=1.0)
 
     def forward(self, inputs):
-        print("Routing started....")
+        # print("Routing started....")
         # print(inputs.shape)
         # print(self.W.shape)
         # inputs_expand = K.expand_dims(inputs, 1)
@@ -75,9 +75,9 @@ class Routing(nn.Module):
 
         # inputs_hat.shape = [None, num_capsule, input_num_capsule, upper capsule length]
         inputs_hat = torch.einsum('ijnm,bin->bijm', self.W, inputs)
-        print("weights shape:", self.W.shape)
-        print("inputs shape:", inputs.shape)
-        print('input hat shape:', inputs_hat.shape)
+        # print("weights shape:", self.W.shape)
+        # print("inputs shape:", inputs.shape)
+        # print('input hat shape:', inputs_hat.shape)
         # dynamic routing
         if self.routing:
             b = torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule)
