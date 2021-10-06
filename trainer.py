@@ -16,18 +16,19 @@ train_dl = DataLoader(train_ds, batch_size, shuffle=True)
 model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
                       capsule_num=16, filter_ensemble_size=3, dropout_ratio=0.8, intermediate_size=(128, 8), sentence_length=30)
 
-# loss_fn =torch.nn.CrossEntropyLoss()
+loss_fn =torch.nn.CrossEntropyLoss()
 # loss_fn = torch.nn.NLLLoss()
 
 opt = torch.optim.Adam(model.parameters(), lr=0.002, betas=(0.7,0.999))
-loss_fn = F.mse_loss
+# loss_fn = F.mse_loss
 # for xb,yb in train_dl:
 #     # print(model(xb.to(torch.long)).size())
 #     # print(xb.size(), yb.size())
 #     output = model(xb.to(torch.long))
 #     print("model output size - ",output.size())
 #     print("label_size - ", yb.size())
-#     print(yb.squeeze(1).size())
+#     print(yb)
+#     print(yb.argmax(-1))
 #     loss = loss_fn((output), yb.squeeze(1))
 #     print(loss)
 #     break
@@ -40,7 +41,7 @@ def fit(num_epochs, model, loss_fn, opt, train_dl):
         count = 0
         # Train with batches of data
         for xb,yb in train_dl:
-            
+            yb = yb.argmax(-1)
             # 1. Generate predictions
             pred = model(xb.to(torch.long))
             print(pred)

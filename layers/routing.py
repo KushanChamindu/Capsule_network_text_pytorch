@@ -19,8 +19,8 @@ class CapsuleNorm(nn.Module):
     def forward(self, inputs, **kwargs):
         return torch.sqrt(torch.sum(torch.square(inputs), -1) + 1e-07)
 
-    def compute_output_shape(self, input_shape):
-        return input_shape[:-1]
+    # def compute_output_shape(self, input_shape):
+    #     return input_shape[:-1]
 
     # def get_config(self):
     #     config = super(Length, self).get_config()
@@ -64,7 +64,7 @@ class Routing(nn.Module):
         #                               self.input_dim_capsule, self.dim_capsule).type(float), requires_grad=True)
 
         # initialize weights
-        torch.nn.init.xavier_uniform_(self.W, gain=1.0)
+        # torch.nn.init.xavier_uniform_(self.W, gain=1.0)
 
     def forward(self, inputs):
         # print("Routing started....")
