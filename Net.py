@@ -26,6 +26,7 @@ class ExtractionNet(nn.Module):
         
         self.routing_1 = Routing(num_capsule=16,dim_capsule=16,input_shape=intermediate_size, routing=True,num_routing=3)
         self.routing_2 = Routing(num_capsule=4,dim_capsule=16,input_shape=(16,16), routing=True,num_routing=3)
+        # self.routing_3 = Routing(num_capsule=4,dim_capsule=16,input_shape=(16,16), routing=True,num_routing=3)
 
         self.capsule_norm = CapsuleNorm()
         self.init_weight()
@@ -33,6 +34,7 @@ class ExtractionNet(nn.Module):
     def init_weight(self):
         torch.nn.init.xavier_normal_(self.routing_1.W)
         torch.nn.init.xavier_normal_(self.routing_2.W)
+        # torch.nn.init.xavier_normal_(self.routing_3.W)
 
     def forward(self, x):
         embeddings = self.embedding_layer(x)
@@ -43,10 +45,11 @@ class ExtractionNet(nn.Module):
         routing_1 = self.routing_1(caps_conv_layer)
         routing_2 = self.routing_2(routing_1)
         capsule_norm = self.capsule_norm(routing_2)
+        # print(capsule_norm.size())
         return(capsule_norm)
 
-config = Config(
-    pretrain_vec=torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")))
+# config = Config(
+#     pretrain_vec=torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")))
 
 # model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
 #                       capsule_num=16, filter_ensemble_size=3, dropout_ratio=0.8, intermediate_size=(128, 8), sentence_length=30)

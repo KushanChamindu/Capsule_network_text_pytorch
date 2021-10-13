@@ -18,55 +18,69 @@ model = ExtractionNet(word_embed_dim=300, output_size=4, hidden_size=128,
 
 loss_fn =torch.nn.CrossEntropyLoss()
 # loss_fn = torch.nn.NLLLoss()
-
-opt = torch.optim.Adam(model.parameters(), lr=0.002, betas=(0.7,0.999))
 # loss_fn = F.mse_loss
+opt = torch.optim.Adam
+# count = 0
 # for xb,yb in train_dl:
+#     count+=1
 #     # print(model(xb.to(torch.long)).size())
 #     # print(xb.size(), yb.size())
+#     yb = yb.argmax(-1)
 #     output = model(xb.to(torch.long))
 #     print("model output size - ",output.size())
 #     print("label_size - ", yb.size())
 #     print(yb)
 #     print(yb.argmax(-1))
-#     loss = loss_fn((output), yb.squeeze(1))
+#     loss = loss_fn((output), yb)
+#     opt.zero_grad()
+#     loss.backward()
+#     opt.step()
 #     print(loss)
-#     break
+#     if count ==2: break
+    
 
 # Utility function to train the model
-def fit(num_epochs, model, loss_fn, opt, train_dl):
+def fit(num_epochs, model, loss_fn, opt_fn, train_dl):
     
     # Repeat for given number of epochs
     for epoch in range(num_epochs):
         count = 0
+        opt = opt_fn(model.parameters(), lr=0.002, betas=(0.7,0.999))
+        model.train()
         # Train with batches of data
         for xb,yb in train_dl:
             yb = yb.argmax(-1)
+            # a = list(model.parameters())[1].clone()
+            
             # 1. Generate predictions
             pred = model(xb.to(torch.long))
-            print(pred)
-            # 2. Calculate loss
+            # print(pred.size())
+            # # 2. Calculate loss
             loss = loss_fn(pred, yb)
 
             print(loss)
             
             # 3. Compute gradients
             loss.backward()
-            print(list(model.parameters())[0])
+            # print(list(model.parameters())[0])
             
-            # 4. Update parameters using gradients
+            # # 4. Update parameters using gradients
             opt.step()
-            
+            # b = list(model.parameters())[1].clone()
+            # print(torch.equal(a.data, b.data))
+            # print("from train.py - ",list(model.parameters())[-2].size())
+            # print(list(model.parameters())[3])
             # 5. Reset the gradients to zero
             opt.zero_grad()
-            if(count ==2): break
-            count= count+1
-        if(count ==2): break
+        #     if(count ==2): break
+        #     count= count+1
+        # if(count ==2): break
         
         
         # Print the progress
         # if (epoch+1) % 10 == 0:
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
+fit(5, model=model,loss_fn=loss_fn,opt_fn=opt,train_dl=train_dl)
 
-fit(5, model=model,loss_fn=loss_fn,opt=opt,train_dl=train_dl)
+print(model)

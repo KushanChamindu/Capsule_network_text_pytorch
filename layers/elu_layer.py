@@ -9,7 +9,7 @@ class Elu_layer(nn.Module):
                                         # num_features = self.embedding_size
                                         kernel_size=(
                                             filter_ensemble_size, num_features),
-                                        stride=1, bias=False,
+                                        stride=1, bias=False
                                         )
         self.batch_normalization_layer = nn.BatchNorm2d(
             out_channels, eps=1e-05, momentum=0.1, affine=True)

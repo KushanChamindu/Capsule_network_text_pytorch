@@ -1,4 +1,5 @@
 import torch
+from torch.autograd import Variable
 
 def squash(vectors, axis=-1):
     """
@@ -7,6 +8,17 @@ def squash(vectors, axis=-1):
     :param axis: the axis to squash
     :return: a Tensor with same shape as input vectors
     """
-    s_squared_norm = torch.sum(torch.square(vectors), axis, keepdims=True)
+    squre = torch.square(vectors)
+    s_squared_norm = torch.sum(squre, axis, keepdims=True)
     scale = s_squared_norm / (1 + s_squared_norm) / torch.sqrt(s_squared_norm + 1e-07)
-    return scale * vectors
+    output = scale * vectors
+    return output
+
+def squash_fn(input, dim=-1):
+    norm = input.norm(p=2, dim=dim, keepdim=True)
+    scale = norm / (1 + norm ** 2)
+    return scale * input
+def squash_d(x, axis=-1):
+    s_squared_norm = torch.sum(torch.square(x), axis, keepdims=True)
+    scale = torch.sqrt(s_squared_norm +1e-07)
+    return x / scale

@@ -1,5 +1,7 @@
 import math
 
+from pandas.core.base import SelectionMixin
+
 import torch
 from torch import nn
 from torch.nn.parameter import Parameter
@@ -48,9 +50,9 @@ class Routing(nn.Module):
         self.input_dim_capsule = input_shape[1]
 
         weights = torch.Tensor(self.input_num_capsule, self.num_capsule,
-                                      self.input_dim_capsule, self.dim_capsule)
+                                       self.input_dim_capsule, self.dim_capsule)
         
-        self.W = Parameter(weights,requires_grad=True)  # nn.Parameter is a Tensor that's a module parameter.
+        self.W = Parameter(weights)  # nn.Parameter is a Tensor that's a module parameter.
 
         # Transform matrix
         # self.W = self.add_weight(shape=[self.input_num_capsule, self.num_capsule,
@@ -67,6 +69,11 @@ class Routing(nn.Module):
         # torch.nn.init.xavier_uniform_(self.W, gain=1.0)
 
     def forward(self, inputs):
+        # priors = torch.matmul(self.W.unsqueeze(dim=0), inputs.unsqueeze(dim=1).unsqueeze(dim=-1)).squeeze(dim=-1)
+        # inputs_hat = torch.einsum('ijnm,bin->bijm', self.W, inputs)
+        # # print("input hat size - ", inputs_hat.size())
+        # outputs, _ = self.dynamic_routing(input = inputs_hat,num_iterations=self.num_routing)
+        
         # print("Routing started....")
         # print(inputs.shape)
         # print(self.W.shape)
@@ -75,13 +82,15 @@ class Routing(nn.Module):
 
         # inputs_hat.shape = [None, num_capsule, input_num_capsule, upper capsule length]
         inputs_hat = torch.einsum('ijnm,bin->bijm', self.W, inputs)
+        # print("input hat - ",self.W.size())
+        # print("input - ", inputs.size())
         # print("weights shape:", self.W.shape)
         # print("inputs shape:", inputs.shape)
         # print('input hat shape:', inputs_hat.shape)
         # dynamic routing
         if self.routing:
-            b = torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule)
-
+            b = Variable(torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule))
+            
             for i in range(self.num_routing):
                 # c shape = [batch_size, num_capsule, input_num_capsule]
                 c = F.softmax(b, dim=1)
@@ -89,10 +98,10 @@ class Routing(nn.Module):
                 # outputs = [batch_size, num_classes, upper capsule length]
                 outputs = torch.einsum('bij,bijm->bjm', c, inputs_hat)
 
-                outputs = squash(outputs)
-
-                if i < self.routing - 1:
-                    b += torch.einsum('bjm,bijm->bij', outputs, inputs_hat)
+                # outputs = squash(outputs)
+                if i < self.num_routing - 1:
+                    # print(b.size())
+                    b = b + torch.einsum('bjm,bijm->bij', outputs, inputs_hat)
 
         # static routing
         else:
@@ -100,7 +109,8 @@ class Routing(nn.Module):
             outputs = torch.sum(inputs_hat, axis=2)
             outputs = squash(outputs)
         # print("outputs shape:", outputs.shape)
-        return outputs
+        return squash(outputs)
+
 
     # def compute_output_shape(self, input_shape):
     #     return tuple([None, self.num_capsule, self.dim_capsule])
@@ -115,3 +125,5 @@ class Routing(nn.Module):
     #     }
     #     base_config = super(Routing, self).get_config()
     #     return dict(list(base_config.items()) + list(config.items()))
+
+
