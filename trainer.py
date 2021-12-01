@@ -41,26 +41,27 @@ opt = torch.optim.Adam
 
 # Utility function to train the model
 def fit(num_epochs, model, loss_fn, opt_fn, train_dl):
-    
+    lost_list = []
     # Repeat for given number of epochs
     for epoch in range(num_epochs):
         count = 0
-        opt = opt_fn(model.parameters(), lr=0.002, betas=(0.7,0.999))
+        opt = opt_fn(model.parameters(), lr=0.1, betas=(0.7,0.999),weight_decay=1e-5)
         model.train()
         # Train with batches of data
         for xb,yb in train_dl:
-            yb = yb.argmax(-1)
+            y_b = yb.argmax(-1)
             # a = list(model.parameters())[1].clone()
             
             # 1. Generate predictions
             pred = model(xb.to(torch.long))
             # print(pred.size())
             # # 2. Calculate loss
-            loss = loss_fn(pred, yb)
+            loss = loss_fn(torch.log(pred), y_b)
 
             print(loss)
+            lost_list.append(loss)
             
-            # 3. Compute gradients
+            ## 3. Compute gradients
             loss.backward()
             # print(list(model.parameters())[0])
             
@@ -70,7 +71,7 @@ def fit(num_epochs, model, loss_fn, opt_fn, train_dl):
             # print(torch.equal(a.data, b.data))
             # print("from train.py - ",list(model.parameters())[-2].size())
             # print(list(model.parameters())[3])
-            # 5. Reset the gradients to zero
+            ## 5. Reset the gradients to zero
             opt.zero_grad()
         #     if(count ==2): break
         #     count= count+1
@@ -80,6 +81,7 @@ def fit(num_epochs, model, loss_fn, opt_fn, train_dl):
         # Print the progress
         # if (epoch+1) % 10 == 0:
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
+        print("Lowerest lost -  {:.4f}".format(torch.min(loss)))
 
 fit(5, model=model,loss_fn=loss_fn,opt_fn=opt,train_dl=train_dl)
 

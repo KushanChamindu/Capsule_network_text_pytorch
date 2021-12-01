@@ -97,8 +97,8 @@ class Routing(nn.Module):
 
                 # outputs = [batch_size, num_classes, upper capsule length]
                 outputs = torch.einsum('bij,bijm->bjm', c, inputs_hat)
-
-                # outputs = squash(outputs)
+                outputs = squash(outputs)
+                # print(outputs)
                 if i < self.num_routing - 1:
                     # print(b.size())
                     b = b + torch.einsum('bjm,bijm->bij', outputs, inputs_hat)
@@ -109,7 +109,7 @@ class Routing(nn.Module):
             outputs = torch.sum(inputs_hat, axis=2)
             outputs = squash(outputs)
         # print("outputs shape:", outputs.shape)
-        return squash(outputs)
+        return outputs
 
 
     # def compute_output_shape(self, input_shape):

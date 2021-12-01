@@ -9,9 +9,23 @@ def squash(vectors, axis=-1):
     :return: a Tensor with same shape as input vectors
     """
     squre = torch.square(vectors)
+    if torch.min(squre) < 0:
+        print("(--------------------------------------------)")
     s_squared_norm = torch.sum(squre, axis, keepdims=True)
-    scale = s_squared_norm / (1 + s_squared_norm) / torch.sqrt(s_squared_norm + 1e-07)
+    # print("Norm - ",s_squared_norm)
+    k = ((torch.sqrt(s_squared_norm.float())))
+    # print("squre root - ",k)
+    scale = s_squared_norm / (1 + s_squared_norm)/ torch.sqrt(s_squared_norm + 1e-07)
+    # if torch.min(scale)<0:
+    # print("scale - ",scale)    
     output = scale * vectors
+    # if torch.sum(output) < 0:
+    #     # print("Norm - ",s_squared_norm)
+    #     # print("scale - ",scale)   
+    #     print(k)
+    #     print("summation - ", torch.sum(output))
+    #     print("output - ", output)
+
     return output
 
 def squash_fn(input, dim=-1):
@@ -22,3 +36,14 @@ def squash_d(x, axis=-1):
     s_squared_norm = torch.sum(torch.square(x), axis, keepdims=True)
     scale = torch.sqrt(s_squared_norm +1e-07)
     return x / scale
+
+import numpy as np
+
+vectors = np.array([1,2,3,4,-10000])
+tensor = torch.from_numpy(vectors)
+
+output = squash(tensor)
+# output = squash(output)
+# output = squash(output)
+# output = squash(output)
+# print(output)
