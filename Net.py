@@ -29,16 +29,16 @@ class ExtractionNet(nn.Module):
         # self.routing_3 = Routing(num_capsule=4,dim_capsule=16,input_shape=(16,16), routing=True,num_routing=3)
 
         self.capsule_norm = CapsuleNorm()
-        self.init_weight()
+        # self.init_weight()
 
-    def init_weight(self):
-        torch.nn.init.xavier_normal_(self.routing_1.W)
-        torch.nn.init.xavier_normal_(self.routing_2.W)
+    # def init_weight(self):
+        # torch.nn.init.xavier_normal_(self.routing_1.W)
+        # torch.nn.init.xavier_normal_(self.routing_2.W)
         # torch.nn.init.xavier_normal_(self.routing_3.W)
 
     def forward(self, x):
         embeddings = self.embedding_layer(x)
-        embeddings = torch.unsqueeze(embeddings, 1).to(torch.float32)
+        embeddings = torch.unsqueeze(embeddings, 1).float()
         elu_layer = self.elu_layer(embeddings)
         conv_layer = self.conv_layer(elu_layer, embeddings)
         caps_conv_layer = self.caps_conv_layer(conv_layer)

@@ -20,7 +20,7 @@ class ConvLayer(nn.Module):
     def forward(self, elu_layer, x):
         conv_layer = self.conv_layer(x)
         batch_normalized = self.batch_normalization_layer(conv_layer)
-        # gate = torch.mul(elu_layer,batch_normalized)
-        gate_layer = self.multiply_layer([elu_layer, batch_normalized])
+        gate_layer = torch.mul(elu_layer,batch_normalized)
+        # gate_layer = self.multiply_layer([elu_layer, batch_normalized])
         return self.dropout(gate_layer)
         # return conv_layer

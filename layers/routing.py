@@ -52,7 +52,9 @@ class Routing(nn.Module):
         weights = torch.Tensor(self.input_num_capsule, self.num_capsule,
                                        self.input_dim_capsule, self.dim_capsule)
         
-        self.W = Parameter(weights)  # nn.Parameter is a Tensor that's a module parameter.
+        self.W = Parameter(weights,requires_grad=True)  # nn.Parameter is a Tensor that's a module parameter.
+        torch.nn.init.xavier_normal_(self.W)
+        self.W.data.uniform_(-1, 1)
 
         # Transform matrix
         # self.W = self.add_weight(shape=[self.input_num_capsule, self.num_capsule,
