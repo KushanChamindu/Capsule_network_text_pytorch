@@ -71,6 +71,7 @@ class Routing(nn.Module):
         # torch.nn.init.xavier_uniform_(self.W, gain=1.0)
 
     def forward(self, inputs):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # priors = torch.matmul(self.W.unsqueeze(dim=0), inputs.unsqueeze(dim=1).unsqueeze(dim=-1)).squeeze(dim=-1)
         # inputs_hat = torch.einsum('ijnm,bin->bijm', self.W, inputs)
         # # print("input hat size - ", inputs_hat.size())
@@ -91,7 +92,7 @@ class Routing(nn.Module):
         # print('input hat shape:', inputs_hat.shape)
         # dynamic routing
         if self.routing:
-            b = Variable(torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule))
+            b = Variable(torch.zeros(inputs_hat.size()[0],self.input_num_capsule, self.num_capsule)).to(device)
             
             for i in range(self.num_routing):
                 # c shape = [batch_size, num_capsule, input_num_capsule]
