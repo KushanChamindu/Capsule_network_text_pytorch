@@ -32,15 +32,14 @@ model.to(device)
 loss_fn =torch.nn.CrossEntropyLoss()
 # loss_fn = torch.nn.NLLLoss()
 # loss_fn = torch.nn.MSELoss()
-opt = torch.optim.Adam
-    
+opt = torch.optim.Adam(model.parameters(), lr=0.002, betas=(0.7,0.999),weight_decay=1e-5)   
 
 # Utility function to train the model
-def fit(num_epochs, model, loss_fn, opt_fn, train_dl, test_dl):
-    opt = opt_fn(model.parameters(), lr=0.002, betas=(0.7,0.999),weight_decay=1e-5)
+def fit(num_epochs, model, loss_fn, opt, train_dl, test_dl):
     model.train()
     # Repeat for given number of epochs
     for epoch in range(num_epochs):
+        
         count = 0
         train_acc, correct_train, train_loss, target_count = 0, 0, 0, 0
         # Train with batches of data
@@ -49,22 +48,22 @@ def fit(num_epochs, model, loss_fn, opt_fn, train_dl, test_dl):
             yb = Variable(yb.float()).to(device)
             y_b = yb.argmax(-1)
             # a = list(model.parameters())[1].clone()
-            
+            opt.zero_grad()
             # 1. Generate predictions
             pred = model(xb)
             # print(pred.shape)
             # 2. Calculate loss
             loss = loss_fn(torch.log(pred), y_b)
-            train_loss +=loss.item()
-            
+            # print(loss)
             # 3. Compute gradients
             loss.backward()
             # print(list(model.parameters())[0])
             
             # 4. Update parameters using gradients
             opt.step()
-            opt.zero_grad()
+           
             # accuracy
+            train_loss +=loss.item()
             # _, predicted = torch.max(pred.data, 1)
             predicted = pred.argmax(-1)
 
@@ -80,8 +79,8 @@ def fit(num_epochs, model, loss_fn, opt_fn, train_dl, test_dl):
 
 def validate(model, val_loader, criterion):
     model.eval()
+    val_acc, correct_val, val_loss, target_count = 0, 0, 0, 0
     with torch.no_grad():
-        val_acc, correct_val, val_loss, target_count = 0, 0, 0, 0
         for i, (input, target) in enumerate(val_loader):
             # target = target.cuda()
             input_var = Variable(input.long()).to(device)
@@ -94,9 +93,10 @@ def validate(model, val_loader, criterion):
             # accuracy
             predicted = output.argmax(-1)
             target_count += target_var.size(0)
-            correct_val += (target_var == predicted).sum().item()
-            val_acc = (100 * correct_val) / target_count
-        return (val_acc * 100) / target_count, val_loss / target_count
-fit(50, model=model,loss_fn=loss_fn,opt_fn=opt,train_dl=train_dl, test_dl=test_dl)
+            correct_val += (target_var == predicted).double().sum().item()
+        return (correct_val * 100) / target_count, val_loss / target_count
+# val_acc, val_loss = validate(model=model,criterion= loss_fn,val_loader=test_dl)
+# print(val_acc, val_loss)
+fit(50, model=model,loss_fn=loss_fn,opt=opt,train_dl=train_dl, test_dl=test_dl)
 
 print(model)
