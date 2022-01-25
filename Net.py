@@ -11,9 +11,9 @@ import torch.nn.functional as F
 from torch import nn
 from torch.nn.parameter import Parameter
 
-class ExtractionNet(nn.Module):
-    def __init__(self, word_embed_dim, output_size, hidden_size, capsule_num, filter_ensemble_size, dropout_ratio, intermediate_size, sentence_length):
-        super(ExtractionNet, self).__init__()
+class ExtractionCapNet(nn.Module):
+    def __init__(self, word_embed_dim, capsule_num, filter_ensemble_size, dropout_ratio, intermediate_size, sentence_length):
+        super(ExtractionCapNet, self).__init__()
 
         self.embedding_layer = nn.Embedding.from_pretrained(embeddings=torch.from_numpy(load_word_embedding_matrix("./embeddings/fasttext_lankadeepa_gossiplanka_300_5")), freeze=True)
 
@@ -21,8 +21,10 @@ class ExtractionNet(nn.Module):
                                    num_features=word_embed_dim, filter_ensemble_size=filter_ensemble_size)
         self.conv_layer = ConvLayer(in_channels=1, out_channels=capsule_num, num_features=word_embed_dim,
                                     filter_ensemble_size=filter_ensemble_size, dropout_ratio=dropout_ratio)
-        self.caps_conv_layer = ConvCapsLayer(
-            in_channels=capsule_num, out_channels=intermediate_size[0]*intermediate_size[1], intermediate_size=intermediate_size, dropout_ratio=dropout_ratio, filter_ensemble_size=(int(sentence_length - filter_ensemble_size + 1), 1))  #int(sentence_length - (filter_ensemble_size//2)*2)
+        self.caps_conv_layer = ConvCapsLayer(in_channels=capsule_num, 
+        out_channels=intermediate_size[0]*intermediate_size[1], 
+        intermediate_size=intermediate_size, dropout_ratio=dropout_ratio, 
+        filter_ensemble_size=(int(sentence_length - filter_ensemble_size + 1), 1))  #int(sentence_length - (filter_ensemble_size//2)*2)
         
         self.routing_1 = Routing(num_capsule=16,dim_capsule=16,input_shape=intermediate_size, routing=True,num_routing=3)
         self.routing_2 = Routing(num_capsule=4,dim_capsule=16,input_shape=(16,16), routing=True,num_routing=3)

@@ -3,7 +3,8 @@ from torch import nn
 from layers.utils import Reshape
 
 class ConvCapsLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, dropout_ratio, intermediate_size, filter_ensemble_size):
+    def __init__(self, in_channels, out_channels, 
+    dropout_ratio, intermediate_size, filter_ensemble_size):
         super(ConvCapsLayer, self).__init__()
 
         self.h_i = nn.Conv2d(in_channels=in_channels,
